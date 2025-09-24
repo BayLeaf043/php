@@ -7,7 +7,7 @@
   public static function get() { 
     static::test();  // змінено self:: на static::
   } 
-
+ 
 }  
 
 class B extends A { 

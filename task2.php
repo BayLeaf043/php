@@ -53,7 +53,7 @@ class Truck extends Car {
 // Створення об'єктів та демонстрація роботи
 $car = new Car("Toyota", 4, 150);
 echo "<h3>Інформація про машину:</h3>";
-$car->show();
+$car->show(); 
 
 echo "<hr>";
 
