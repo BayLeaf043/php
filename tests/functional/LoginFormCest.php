@@ -1,59 +1,60 @@
 <?php
 
+namespace tests\functional;
+
+use app\models\User;
+use FunctionalTester;
+use Yii;
+
 class LoginFormCest
 {
-    public function _before(\FunctionalTester $I)
+    public function _before(FunctionalTester $I)
     {
-        $I->amOnRoute('site/login');
+        $login = 'testlogin';
+        $user = User::find()->where(['login' => $login])->one();
+
+        if ($user === null) {
+            $user = new User();
+            $user->name = 'Тестовий Користувач';
+            $user->login = $login;
+            $user->password_hash = Yii::$app->security->generatePasswordHash('testpass');
+            $user->auth_key = Yii::$app->security->generateRandomString();
+            $user->save(false);
+        }
     }
 
-    public function openLoginPage(\FunctionalTester $I)
+    public function ensureLoginPageOpens(FunctionalTester $I)
     {
-        $I->see('Login', 'h1');
-
+        $I->amOnRoute('auth/login');
+        $I->see('Вхід до системи', 'h2');
     }
 
-    // demonstrates `amLoggedInAs` method
-    public function internalLoginById(\FunctionalTester $I)
+    public function loginWithEmptyFields(FunctionalTester $I)
     {
-        $I->amLoggedInAs(100);
-        $I->amOnPage('/');
-        $I->see('Logout (admin)');
+        $I->amOnRoute('auth/login');
+        $I->click('Увійти');
+        $I->see('Це поле є обов’язковим');
     }
 
-    // demonstrates `amLoggedInAs` method
-    public function internalLoginByInstance(\FunctionalTester $I)
+    public function loginWithWrongPassword(FunctionalTester $I)
     {
-        $I->amLoggedInAs(\app\models\User::findByUsername('admin'));
-        $I->amOnPage('/');
-        $I->see('Logout (admin)');
+        $I->amOnRoute('auth/login');
+
+        $I->fillField('LoginForm[login]', 'testlogin');
+        $I->fillField('LoginForm[password]', 'wrong');
+        $I->click('Увійти');
+
+        $I->see('Невірний логін або пароль.');
     }
 
-    public function loginWithEmptyCredentials(\FunctionalTester $I)
+    public function loginSuccessfully(FunctionalTester $I)
     {
-        $I->submitForm('#login-form', []);
-        $I->expectTo('see validations errors');
-        $I->see('Username cannot be blank.');
-        $I->see('Password cannot be blank.');
-    }
+        $I->amOnRoute('auth/login');
 
-    public function loginWithWrongCredentials(\FunctionalTester $I)
-    {
-        $I->submitForm('#login-form', [
-            'LoginForm[username]' => 'admin',
-            'LoginForm[password]' => 'wrong',
-        ]);
-        $I->expectTo('see validations errors');
-        $I->see('Incorrect username or password.');
-    }
+        $I->fillField('LoginForm[login]', 'testlogin');
+        $I->fillField('LoginForm[password]', 'testpass');
+        $I->click('Увійти');
 
-    public function loginSuccessfully(\FunctionalTester $I)
-    {
-        $I->submitForm('#login-form', [
-            'LoginForm[username]' => 'admin',
-            'LoginForm[password]' => 'admin',
-        ]);
-        $I->see('Logout (admin)');
-        $I->dontSeeElement('form#login-form');              
+        $I->see('Вийти (testlogin)');
     }
 }
