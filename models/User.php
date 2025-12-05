@@ -6,6 +6,7 @@ use Yii;
 use yii\db\ActiveRecord;
 use yii\web\IdentityInterface;
 
+
 /**
  * Модель користувача для таблиці "users".
  * @property int $id

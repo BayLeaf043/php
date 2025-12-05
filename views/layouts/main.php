@@ -43,6 +43,11 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
         ['label' => 'Contact', 'url' => ['/site/contact']],
     ];
 
+    // Показуємо пункт "Адмінка" тільки адміну
+if (!Yii::$app->user->isGuest && Yii::$app->user->identity->login === 'admin123') {
+    $items[] = ['label' => 'Адмінка', 'url' => ['/admin-article/index']];
+}
+
     if (Yii::$app->user->isGuest) {
         // --- Користувач не увійшов ---
         $items[] = ['label' => 'Вхід', 'url' => ['/auth/login']];
